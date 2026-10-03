@@ -7,6 +7,10 @@ import { ExpoSketchViewModel } from '../src/viewModel';
 const fakeRepository = (initial: LayoutDocument | null = null): LayoutRepository => ({
   load: vi.fn(async () => initial ?? createStarterDocument()),
   save: vi.fn(async (_document) => {}),
+  listPlans: vi.fn(async () => []),
+  loadPlan: vi.fn(async () => null),
+  savePlan: vi.fn(async () => {}),
+  deletePlan: vi.fn(async () => {}),
 });
 
 describe('ExpoSketchViewModel', () => {
@@ -28,7 +32,7 @@ describe('ExpoSketchViewModel', () => {
   });
 
   it('recovers the example if repository loading fails', async () => {
-    const repository: LayoutRepository = { load: vi.fn(async () => { throw new Error('bad storage'); }), save: vi.fn(async () => {}) };
+    const repository: LayoutRepository = { load: vi.fn(async () => { throw new Error('bad storage'); }), save: vi.fn(async () => {}), listPlans: vi.fn(async () => []), loadPlan: vi.fn(async () => null), savePlan: vi.fn(async () => {}), deletePlan: vi.fn(async () => {}) };
     const vm = new ExpoSketchViewModel(repository);
     await vm.initialize();
     expect(vm.state.phase).toBe('error');
@@ -36,7 +40,7 @@ describe('ExpoSketchViewModel', () => {
   });
 
   it('shows a save error without dropping the working document', async () => {
-    const repository: LayoutRepository = { load: vi.fn(async () => createStarterDocument()), save: vi.fn(async () => { throw new Error('quota'); }) };
+    const repository: LayoutRepository = { load: vi.fn(async () => createStarterDocument()), save: vi.fn(async () => { throw new Error('quota'); }), listPlans: vi.fn(async () => []), loadPlan: vi.fn(async () => null), savePlan: vi.fn(async () => {}), deletePlan: vi.fn(async () => {}) };
     const vm = new ExpoSketchViewModel(repository);
     await vm.initialize();
     vm.addElement('stage');
