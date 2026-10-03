@@ -1,6 +1,18 @@
 import { createElement, createStarterDocument, analyzeLayout, findElement, getBoundingBox, normalizeRotation } from './domain';
 import type { LayoutRepository } from './repository';
+import type { FilePickerService } from './fileService';
+import { parseTransferFile } from './transfer';
+import type { ParsedTransfer, TransferIssue } from './transfer';
 import type { Analysis, ElementKind, LayoutDocument, LayoutMode, Notice, RenderElement, ViewPhase } from './types';
+
+export interface ImportPreview {
+  document: LayoutDocument;
+  sourceVersion: number;
+  fileName: string;
+  errors: TransferIssue[];
+  warnings: TransferIssue[];
+  fatal: string | null;
+}
 
 export interface ExpoSketchState {
   phase: ViewPhase;
@@ -12,6 +24,7 @@ export interface ExpoSketchState {
   analysis: Analysis;
   notice: Notice;
   lastSavedAt: number | null;
+  importPreview: ImportPreview | null;
 }
 
 const toRenderElements = (document: LayoutDocument): RenderElement[] => document.elements.map((element) => {
@@ -36,9 +49,15 @@ export class ExpoSketchViewModel {
     analysis: analyzeLayout(createStarterDocument()),
     notice: { tone: 'info', message: '正在恢复最近布局…' },
     lastSavedAt: null,
+    importPreview: null,
   };
 
-  constructor(private readonly repository: LayoutRepository) {}
+  constructor(
+    private readonly repository: LayoutRepository,
+    private readonly filePicker: FilePickerService,
+    private readonly downloader: (document: LayoutDocument) => void,
+    private readonly printer: (document: LayoutDocument) => void,
+  ) {}
 
   get state() { return this.stateValue; }
 
@@ -114,6 +133,89 @@ export class ExpoSketchViewModel {
     this.commitAndPersist({ document, selectedId: 'stage-1', mode: 'edit', notice: { tone: 'success', message: '已恢复示例布局' } });
   }
 
+  exportLayout() {
+    try {
+      this.downloader(this.stateValue.document);
+      this.commit({ notice: { tone: 'success', message: '布局文件已导出，可随时重新导入' } });
+    } catch {
+      this.commit({ notice: { tone: 'error', message: '导出失败，请稍后重试或使用打印图纸功能' } });
+    }
+  }
+
+  printLayout() {
+    try {
+      this.printer(this.stateValue.document);
+      this.commit({ notice: { tone: 'info', message: '正在准备打印图纸…' } });
+    } catch {
+      this.commit({ notice: { tone: 'error', message: '打印图纸生成失败，请稍后重试' } });
+    }
+  }
+
+  async startImport() {
+    let picked: { name: string; text: string } | null;
+    try {
+      picked = await this.filePicker.pickLayoutFile();
+    } catch {
+      this.commit({ notice: { tone: 'error', message: '读取所选文件失败，请重新选择' } });
+      return;
+    }
+    if (picked === null) return; // 用户取消了文件选择
+
+    // 先在局部变量里完成全部解析与校验，任何异常都不触碰当前草稿
+    let parsed: ParsedTransfer;
+    try {
+      parsed = parseTransferFile(picked.text, this.stateValue.document.field);
+    } catch {
+      this.commit({ notice: { tone: 'error', message: '文件解析失败，当前布局未做任何改动' } });
+      return;
+    }
+
+    const fileName = picked.name;
+    if (parsed.fatal) {
+      this.commit({
+        importPreview: { document: parsed.document, sourceVersion: parsed.sourceVersion, fileName, errors: parsed.issues, warnings: [], fatal: parsed.fatal },
+        notice: { tone: 'error', message: '导入文件无法识别，当前布局保持不变' },
+      });
+      return;
+    }
+
+    const errors = parsed.issues.filter((issue) => issue.level === 'error');
+    const warnings = parsed.issues.filter((issue) => issue.level === 'warning');
+    this.commit({
+      importPreview: { document: parsed.document, sourceVersion: parsed.sourceVersion, fileName, errors, warnings, fatal: null },
+      notice: errors.length
+        ? { tone: 'warning', message: `文件中发现 ${errors.length} 个阻断问题，请先核对` }
+        : warnings.length
+          ? { tone: 'info', message: `校验完成：${warnings.length} 条提醒，可选择导入方式` }
+          : { tone: 'success', message: '文件校验通过，请选择导入方式' },
+    });
+  }
+
+  cancelImport() {
+    if (!this.stateValue.importPreview) return;
+    this.commit({ importPreview: null, notice: { tone: 'info', message: '已取消导入，当前布局保持不变' } });
+  }
+
+  confirmImport(mode: 'replace' | 'duplicate') {
+    const preview = this.stateValue.importPreview;
+    if (!preview || preview.fatal || preview.errors.length > 0) return;
+
+    const base = preview.document;
+    const document: LayoutDocument = mode === 'duplicate'
+      ? { ...base, title: uniqueCopyTitle(base.title) }
+      : base;
+
+    this.commitAndPersist({
+      document,
+      selectedId: document.elements[0]?.id ?? null,
+      mode: 'edit',
+      importPreview: null,
+      notice: mode === 'replace'
+        ? { tone: 'success', message: `已用「${document.title}」覆盖当前草稿` }
+        : { tone: 'success', message: `已另存为新方案「${document.title}」` },
+    });
+  }
+
   private commitAndPersist(patch: Partial<ExpoSketchState>) {
     this.commit(patch);
     void this.persist();
@@ -135,3 +237,8 @@ export class ExpoSketchViewModel {
     this.listeners.forEach((listener) => listener());
   }
 }
+
+const uniqueCopyTitle = (title: string): string => {
+  const base = title.replace(/（导入副本\s*\d*）$/, '').trim();
+  return `${base}（导入副本）`;
+};

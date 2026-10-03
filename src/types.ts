@@ -25,7 +25,7 @@ export interface FieldSize {
 }
 
 export interface LayoutDocument {
-  version: 1;
+  version: number;
   title: string;
   field: FieldSize;
   elements: ExpoElement[];

@@ -108,3 +108,44 @@ button { cursor: pointer; }
 .analysis-panel { display: grid; grid-template-columns: 1.15fr 1.4fr 1.8fr; align-items: center; gap: 20px; min-height: 58px; margin-top: 14px; padding: 12px 17px; border: 1px solid #e7ecf1; border-radius: 11px; background: #fff; box-shadow: 0 5px 16px #2b41620a; }.analysis-title { display: flex; align-items: center; gap: 9px; }.analysis-pulse { width: 8px; height: 8px; border-radius: 50%; background: #5cc49b; box-shadow: 0 0 0 4px #def5ea; }.analysis-path .analysis-pulse { background: #ef795f; box-shadow: 0 0 0 4px #fce8e3; }.analysis-title strong, .analysis-title .section-kicker { display: block; }.analysis-title strong { margin-top: 3px; color: #52667a; font: 600 11px 'Space Grotesk'; }.analysis-metrics { display: flex; gap: 14px; color: #a1adb8; font: 9px 'DM Mono'; }.analysis-metrics span { white-space: nowrap; }.analysis-metrics b { margin-right: 3px; color: #5f7487; font-weight: 500; }.analysis-metrics .metric-warning b { color: #db8a48; }.analysis-result { display: grid; gap: 3px; justify-self: end; text-align: right; }.analysis-result strong { color: #5b6e80; font-size: 10px; font-weight: 600; }.analysis-result small { color: #aab4bd; font: 9px 'DM Mono'; }
 .loading-screen { min-height: 100vh; display: grid; place-content: center; justify-items: center; gap: 9px; background: #f6f8fb; color: #738294; }.loading-mark { width: 45px; height: 45px; display: grid; place-items: center; margin-bottom: 7px; border-radius: 14px; background: #ef795f; color: #fff; font-size: 22px; box-shadow: 0 9px 20px #ef795f38; }.loading-screen strong { color: #36495d; font: 600 16px 'Space Grotesk'; }.loading-screen span { color: #a4afb9; font-size: 11px; }
 @media (max-width: 1260px) { .left-rail { width: 250px; flex-basis: 250px; }.main-stage { padding: 0 24px; }.editor-grid { grid-template-columns: minmax(560px, 1fr) 235px; gap: 13px; }.bottom-meta { display: none; } }
+.export-group { display: flex; align-items: center; gap: 8px; }
+.export-group .share-button { padding: 9px 12px; }
+.share-button.primary { border-color: #ef795f; background: #ef795f; color: #fff; }
+.share-button.primary span { color: #fff; }
+.share-button:hover { border-color: #efaa9b; }
+.modal-backdrop { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 32px; background: #20303f55; backdrop-filter: blur(2px); }
+.modal { width: 680px; max-width: 100%; max-height: 86vh; overflow-y: auto; background: #fff; border: 1px solid #e4eaf1; border-radius: 16px; box-shadow: 0 24px 60px #20303f33; }
+.modal-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 22px 24px 16px; border-bottom: 1px solid #eef1f5; }
+.modal-head h2 { margin: 4px 0 0; color: #1f3042; font: 600 18px 'Space Grotesk'; }
+.modal-close { width: 28px; height: 28px; border: 0; border-radius: 8px; background: #f3f6f9; color: #8494a4; font-size: 16px; line-height: 1; }
+.modal-close:hover { background: #eaeff4; color: #53667b; }
+.import-source { display: grid; grid-template-columns: 1.6fr 1fr 1fr .7fr; gap: 10px; margin: 18px 24px 0; padding: 13px 15px; background: #f7f9fc; border: 1px solid #e9eef4; border-radius: 11px; }
+.import-source small { display: block; color: #9aa7b4; font: 9px 'DM Mono'; letter-spacing: .4px; }
+.import-source strong { display: block; margin-top: 3px; color: #40536a; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.import-section { margin: 16px 24px 0; }
+.issue-heading { margin: 0 0 8px; font: 600 11px 'Space Grotesk'; }
+.issue-heading.error { color: #d95f4c; }
+.issue-heading.warning { color: #c9862f; }
+.import-issues { list-style: none; display: grid; gap: 6px; margin: 0; padding: 0; }
+.issue-row { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 10px; padding: 8px 11px; border: 1px solid #edf0f4; border-radius: 9px; font-size: 11px; color: #586b7e; }
+.issue-row.error { border-color: #f4d2cb; background: #fdf4f2; }
+.issue-row.warning { border-color: #f5e4c6; background: #fefaf1; }
+.issue-code { display: grid; place-items: center; height: 20px; border-radius: 6px; font: 500 9px 'DM Mono'; color: #fff; }
+.issue-row.error .issue-code { background: #e56e5b; }
+.issue-row.warning .issue-code { background: #e0a244; }
+.issue-path { color: #9aa9b7; font: 9px 'DM Mono'; background: #f1f4f8; padding: 3px 6px; border-radius: 5px; }
+.import-blocked { display: flex; gap: 12px; margin: 18px 24px 0; padding: 15px 16px; border: 1px solid #f4d2cb; border-radius: 11px; background: #fdf4f2; }
+.blocked-icon { width: 28px; height: 28px; flex: 0 0 28px; display: grid; place-items: center; border-radius: 50%; background: #e56e5b; color: #fff; font-weight: 700; }
+.import-blocked strong { color: #c14f3d; font-size: 12px; }
+.import-blocked p { margin: 4px 0 0; color: #8a6c66; font-size: 11px; line-height: 1.55; }
+.import-blocked .blocked-sub { color: #a6918c; }
+.import-ok { margin: 18px 24px 0; padding: 11px 14px; border: 1px solid #cfe9de; border-radius: 10px; background: #f0faf5; color: #398c69; font-size: 11px; }
+.import-current-note { margin: 14px 24px 0; color: #93a0ad; font-size: 10.5px; }
+.import-current-note strong { color: #5d6f82; }
+.modal-foot { display: flex; justify-content: flex-end; gap: 9px; padding: 18px 24px 22px; margin-top: 20px; border-top: 1px solid #eef1f5; }
+.modal-foot .secondary-button, .modal-foot .primary-button { height: 34px; padding: 0 16px; border-radius: 8px; font-size: 11px; }
+.primary-button { border: 1px solid #ef795f; background: #ef795f; color: #fff; }
+.primary-button:hover { background: #e56b53; }
+.primary-button.danger { border-color: #e56e5b; background: #e56e5b; }
+#exposketch-print-frame { position: fixed; right: 0; bottom: 0; width: 0; height: 0; border: 0; }
+.import-file-name { display: block; margin-top: 5px; color: #9aa7b4; font: 9px 'DM Mono'; letter-spacing: .2px; word-break: break-all; }
